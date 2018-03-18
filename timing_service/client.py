@@ -1,8 +1,7 @@
 import logging
 import json
-import socket
-
 import redis
+
 
 LOGGER = logging.getLogger(__name__)
 
