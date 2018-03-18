@@ -8,6 +8,7 @@ import coloredlogs
 
 from device_service.api.server import ApiServer
 from device_service.tracker.controller import TrackerController
+from device_service.tracker.fake_controller import FakeTrackerController
 from device_service.datastream.server import DataStreamServer
 
 
@@ -15,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Runner:
-    def __init__(self):
+    def __init__(self, use_fake_device=False):
         self._config = self._get_config()
 
         self._datastream_server = DataStreamServer(
@@ -23,7 +24,12 @@ class Runner:
             redis_port=self._config['datastream'].getint('redis_port')
         )
 
-        self._tracker = TrackerController(
+        if use_fake_device:
+            tracker_class = FakeTrackerController
+        else:
+            tracker_class = TrackerController
+
+        self._tracker = tracker_class(
             self._datastream_server,
             baudrate=self._config['device'].getint('baudrate')
         )
