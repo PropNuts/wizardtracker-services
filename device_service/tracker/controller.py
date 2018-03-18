@@ -1,10 +1,9 @@
+import enum
 import logging
 import threading
-import time
-import enum
-
 import serial
 import serial.tools.list_ports
+import time
 
 from device_service.utils.cycletimer import CycleTimer
 
@@ -50,7 +49,7 @@ class NonBlockingLineReader:
         return None
 
 @enum.unique
-class TrackerState(enum.Enum):
+class _TrackerState(enum.Enum):
     DISCONNECTED = 1
     WAITING_FOR_FIRST_DATA = 2
     WAITING_FOR_STATUS = 3
@@ -70,7 +69,7 @@ class TrackerController:
         self._should_stop = False
         self._control_lock = threading.RLock()
 
-        self._state = TrackerState(TrackerState.DISCONNECTED)
+        self._state = _TrackerState(_TrackerState.DISCONNECTED)
 
         self._datastream = datastream
 
@@ -112,7 +111,7 @@ class TrackerController:
 
             LOGGER.info('Connected to device (%s).', port)
 
-            self._state = TrackerState.WAITING_FOR_FIRST_DATA
+            self._state = _TrackerState.WAITING_FOR_FIRST_DATA
             LOGGER.info('Awaiting first data from device...')
 
             return True
@@ -123,7 +122,7 @@ class TrackerController:
                 return True
 
             self._serial.close()
-            self._state = TrackerState(TrackerState.DISCONNECTED)
+            self._state = _TrackerState(_TrackerState.DISCONNECTED)
 
             LOGGER.info('Disconnected from device.')
             return True
@@ -163,7 +162,7 @@ class TrackerController:
             except serial.SerialException:
                 LOGGER.error('Serial connection lost.')
                 self._serial.close()
-                self._state = TrackerState(TrackerState.DISCONNECTED)
+                self._state = _TrackerState(_TrackerState.DISCONNECTED)
 
     def _parse_line(self, line):
         try:
@@ -172,17 +171,17 @@ class TrackerController:
             LOGGER.warning("Invalid data received. Skipping...")
             return
 
-        if self._state == TrackerState.WAITING_FOR_FIRST_DATA:
+        if self._state == _TrackerState.WAITING_FOR_FIRST_DATA:
             self._parse_serial_waiting_for_first_data()
-        elif self._state == TrackerState.WAITING_FOR_STATUS:
+        elif self._state == _TrackerState.WAITING_FOR_STATUS:
             self._parse_serial_waiting_for_status(command, args)
-        elif self._state == TrackerState.READY:
+        elif self._state == _TrackerState.READY:
             self._parse_serial_ready(command, args)
 
     def _parse_serial_waiting_for_first_data(self):
         LOGGER.info('First data received.')
 
-        self._state = TrackerState.WAITING_FOR_STATUS
+        self._state = _TrackerState.WAITING_FOR_STATUS
         self._write_serial_command('?')
         LOGGER.info('Awaiting device status...')
 
@@ -202,7 +201,7 @@ class TrackerController:
         LOGGER.info('- Frequencies: %s', ', '.join(
             [str(f) for f in self.frequencies]))
 
-        self._state = TrackerState.READY
+        self._state = _TrackerState.READY
         LOGGER.info('Device ready!')
 
     def _parse_serial_ready(self, command, args):
@@ -244,7 +243,7 @@ class TrackerController:
 
     @property
     def is_ready(self):
-        return self._state == TrackerState.READY
+        return self._state == _TrackerState.READY
 
     @property
     def hz(self):
