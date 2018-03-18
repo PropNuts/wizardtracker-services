@@ -7,7 +7,7 @@ import redis
 LOGGER = logging.getLogger(__name__)
 
 
-def lowpass_filter(last_value, value, alpha=0.025):
+def lowpass_filter(last_value, value, alpha=0.1):
     return last_value + (alpha * (value - last_value))
 
 
