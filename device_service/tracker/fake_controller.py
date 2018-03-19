@@ -99,7 +99,7 @@ class FakeTrackerController:
     def _generate_fake_rssi(self):
         for i, r in enumerate(self.rssi):
             c = (i / self.receiver_count)
-            t = self._gen_theta + (math.pi * c)
+            t = self._gen_theta - (math.pi * c)
             v = math.sin(t)
             d = 0.75
 
