@@ -2,7 +2,7 @@ import threading
 import logging
 
 from wsgiref.simple_server import WSGIRequestHandler, make_server
-from device_service.api.app import app
+from wizardtracker.device_service.api.app import app
 
 
 LOGGER = logging.getLogger(__name__)

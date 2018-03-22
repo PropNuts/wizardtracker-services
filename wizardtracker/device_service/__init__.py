@@ -6,10 +6,10 @@ import sys
 import logging
 import coloredlogs
 
-from device_service.api.server import ApiServer
-from device_service.tracker.controller import TrackerController
-from device_service.tracker.fake_controller import FakeTrackerController
-from device_service.datastream.server import DataStreamServer
+from .api.server import ApiServer
+from .tracker.controller import TrackerController
+from .tracker.fake_controller import FakeTrackerController
+from .datastream.server import DataStreamServer
 
 
 LOGGER = logging.getLogger(__name__)

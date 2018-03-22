@@ -5,8 +5,8 @@ import sys
 import signal
 import time
 
-from timing_service.client import DataStreamClient
-from timing_service.processor import DataProcessor
+from wizardtracker.timing_service.client import DataStreamClient
+from wizardtracker.timing_service.processor import DataProcessor
 
 
 LOGGER = logging.getLogger(__name__)

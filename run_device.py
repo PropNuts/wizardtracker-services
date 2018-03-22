@@ -1,6 +1,6 @@
 import argparse
 
-from device_service import Runner
+from wizardtracker.device_service import Runner
 
 
 if __name__ == '__main__':

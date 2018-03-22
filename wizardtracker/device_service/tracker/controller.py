@@ -5,7 +5,7 @@ import serial
 import serial.tools.list_ports
 import time
 
-from device_service.utils.cycletimer import CycleTimer
+from wizardtracker.device_service.utils.cycletimer import CycleTimer
 
 
 LOGGER = logging.getLogger(__name__)

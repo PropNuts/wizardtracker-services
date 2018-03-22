@@ -1,4 +1,4 @@
-from timing_service import Runner
+from wizardtracker.timing_service import Runner
 
 
 if __name__ == '__main__':
