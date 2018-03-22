@@ -7,7 +7,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DataStreamClient:
-
     def __init__(self, processor):
         self._processor = processor
 

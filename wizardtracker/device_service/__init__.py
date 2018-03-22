@@ -6,7 +6,7 @@ import sys
 import logging
 import coloredlogs
 
-from .api.server import ApiServer
+from .api.server import DeviceServiceApiServer
 from .tracker.controller import TrackerController
 from .tracker.fake_controller import FakeTrackerController
 from .datastream.server import DataStreamServer
@@ -34,7 +34,7 @@ class Runner:
             baudrate=self._config['device'].getint('baudrate')
         )
 
-        self._api_server = ApiServer(
+        self._api_server = DeviceServiceApiServer(
             self._tracker,
             host=self._config['api']['listen_host'],
             port=self._config['api'].getint('listen_port')
