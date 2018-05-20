@@ -1,9 +1,10 @@
 import threading
 import logging
-import coloredlogs
 import sys
 import signal
 import time
+
+import coloredlogs
 
 from wizardtracker.timing_service.api import TimingServiceApiServer
 from wizardtracker.timing_service.client import DataStreamClient
@@ -59,8 +60,8 @@ class Runner:
         self._processor_thread.join()
 
         LOGGER.debug('Waiting for recorder thread...')
-        self._recoder.stop()
-        self._recoder_thread.join()
+        self._recorder.stop()
+        self._recorder_thread.join()
 
         LOGGER.debug('Waiting for API server thread...')
         self._api.stop()
