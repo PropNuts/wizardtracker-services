@@ -5,8 +5,10 @@ import sys
 import signal
 import time
 
+from wizardtracker.timing_service.api import TimingServiceApiServer
 from wizardtracker.timing_service.client import DataStreamClient
 from wizardtracker.timing_service.processor import DataProcessor
+from wizardtracker.timing_service.recorder import DataRecorder
 
 
 LOGGER = logging.getLogger(__name__)
@@ -16,11 +18,18 @@ class Runner:
     def __init__(self):
         self._processor = DataProcessor()
         self._datastream_client = DataStreamClient(self._processor)
+        self._recorder = DataRecorder()
+        self._api = TimingServiceApiServer(self._recorder, '127.0.0.1', 3092)
 
         self._datastream_thread = threading.Thread(
             target=self._datastream_client.start)
         self._processor_thread = threading.Thread(
             target=self._processor.start)
+        self._recorder_thread = threading.Thread(
+            target=self._recorder.start)
+        self._api_thread = threading.Thread(
+            target=self._api.start
+        )
 
     def start(self):
         coloredlogs.install(
@@ -32,6 +41,8 @@ class Runner:
 
         self._datastream_thread.start()
         self._processor_thread.start()
+        self._recorder_thread.start()
+        self._api_thread.start()
 
         while True:
             time.sleep(1)
@@ -46,6 +57,14 @@ class Runner:
         LOGGER.debug('Waiting for processor thread...')
         self._processor.stop()
         self._processor_thread.join()
+
+        LOGGER.debug('Waiting for recorder thread...')
+        self._recoder.stop()
+        self._recoder_thread.join()
+
+        LOGGER.debug('Waiting for API server thread...')
+        self._api.stop()
+        self._api_thread.join()
 
         LOGGER.info('Bye!')
         sys.exit(0)

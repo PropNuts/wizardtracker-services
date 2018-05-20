@@ -44,12 +44,7 @@ class DataProcessor:
         self._queue.put(data)
 
     def _loop(self):
-        data = None
-        try:
-            data = self._queue.get(block=False)
-        except queue.Empty:
-            return
-
+        data = self._queue.get()
         timestamp = data['timestamp']
         rssi = data['rssi']
 
