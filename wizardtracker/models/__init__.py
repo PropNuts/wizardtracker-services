@@ -4,12 +4,13 @@ import logging
 from peewee import *
 
 
-DB = SqliteDatabase('wizardtracker.db')
+DB = SqliteDatabase('wizardtracker.db', pragmas=(('foreign_keys', 'on'),))
 DB.connect()
 
 # Hush, peewee.
-peewee_logger = logging.getLogger('peewee')
-peewee_logger.setLevel(logging.INFO)
+PEEWEE_LOGGER = logging.getLogger('peewee')
+PEEWEE_LOGGER.setLevel(logging.INFO)
+
 
 class BaseModel(Model):
     class Meta:
@@ -25,10 +26,13 @@ class Race(BaseModel):
 class RaceReceiver(BaseModel):
     receiver_id = IntegerField()
     frequency = IntegerField()
-    race = ForeignKeyField(Race, backref='receivers')
+    race = ForeignKeyField(Race, backref='receivers', on_delete='cascade')
 
 
 class RaceRssi(BaseModel):
     timestamp = FloatField()
-    receiver = ForeignKeyField(RaceReceiver, backref='rssi')
+    receiver = ForeignKeyField(
+        RaceReceiver,
+        backref='rssi',
+        on_delete='cascade')
     value = IntegerField()
