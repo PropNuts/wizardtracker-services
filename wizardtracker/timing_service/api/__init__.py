@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
-from wizardtracker.wsgi_api_server import ApiServer
 
+from wizardtracker.wsgi_api_server import ApiServer
+from wizardtracker.timing_service.timing import get_times
 
 APP = Flask(__name__)
 
@@ -20,6 +21,15 @@ def stop_race():
 
     return jsonify({
         'success': success
+    })
+
+@APP.route('/race/times', methods=['GET'])
+def get_race_times():
+    race_id = request.args.get('id')
+    get_times(race_id)
+
+    return jsonify({
+        'success': '?'
     })
 
 

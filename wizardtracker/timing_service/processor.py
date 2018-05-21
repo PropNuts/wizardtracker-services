@@ -1,5 +1,4 @@
 import logging
-import json
 
 from wizardtracker.nice_redis_pubsub import NiceRedisPubsub
 
