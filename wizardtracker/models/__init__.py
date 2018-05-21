@@ -1,10 +1,15 @@
 import datetime
+import logging
+
 from peewee import *
 
 
 DB = SqliteDatabase('wizardtracker.db')
 DB.connect()
 
+# Hush, peewee.
+peewee_logger = logging.getLogger('peewee')
+peewee_logger.setLevel(logging.INFO)
 
 class BaseModel(Model):
     class Meta:
