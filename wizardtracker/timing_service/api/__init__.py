@@ -14,6 +14,15 @@ def start_race():
     })
 
 
+@APP.route('/race/stop', methods=['POST'])
+def stop_race():
+    success = APP.recorder.stop_race()
+
+    return jsonify({
+        'success': success
+    })
+
+
 class TimingServiceApiServer(ApiServer):
     def __init__(self, recorder, host, port):
         super().__init__(APP, host, port, {'recorder': recorder})
