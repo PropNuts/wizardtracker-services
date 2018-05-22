@@ -58,7 +58,7 @@ class _TrackerState(enum.Enum):
 class TrackerController:
     CHUNK_SIZE = 128
 
-    def __init__(self, datastream, baudrate=250000):
+    def __init__(self, rssi_publisher, baudrate=250000):
         self.receiver_count = None
         self.raw_mode = None
         self.frequencies = None
@@ -71,7 +71,7 @@ class TrackerController:
 
         self._state = _TrackerState(_TrackerState.DISCONNECTED)
 
-        self._datastream = datastream
+        self._rssi_publisher = rssi_publisher
 
         self._serial = serial.Serial()
         self._serial.baudrate = baudrate
@@ -213,7 +213,7 @@ class TrackerController:
                 'rssi': readings
             }
 
-            self._datastream.queue_data(queue_data)
+            self._rssi_publisher.publish(queue_data)
             self.rssi = tuple(readings)
             LOGGER.debug('RSSI: %s', readings)
         elif command == 'v':

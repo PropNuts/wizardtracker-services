@@ -9,7 +9,7 @@ import coloredlogs
 from .api.server import DeviceServiceApiServer
 from .tracker.controller import TrackerController
 from .tracker.fake_controller import FakeTrackerController
-from .datastream.server import DataStreamServer
+from .rssi_publisher import RssiPublisher
 
 
 LOGGER = logging.getLogger(__name__)
@@ -19,32 +19,23 @@ class Runner:
     def __init__(self, use_fake_device=False):
         self._config = self._get_config()
 
-        self._datastream_server = DataStreamServer(
-            redis_host=self._config['datastream']['redis_host'],
-            redis_port=self._config['datastream'].getint('redis_port')
-        )
+        self._rssi_publisher = RssiPublisher(
+            self._config['redis']['host'],
+            self._config['redis'].getint('port'))
 
-        if use_fake_device:
-            tracker_class = FakeTrackerController
-        else:
-            tracker_class = TrackerController
+        tracker_class = (
+            FakeTrackerController if use_fake_device else TrackerController)
 
         self._tracker = tracker_class(
-            self._datastream_server,
-            baudrate=self._config['device'].getint('baudrate')
-        )
+             self._rssi_publisher,
+            baudrate=self._config['device'].getint('baudrate'))
 
         self._api_server = DeviceServiceApiServer(
             self._tracker,
             host=self._config['api']['listen_host'],
-            port=self._config['api'].getint('listen_port')
-        )
-
+            port=self._config['api'].getint('listen_port'))
         self._tracker_thread = threading.Thread(target=self._tracker.start)
         self._api_thread = threading.Thread(target=self._api_server.start)
-        self._datastream_thread = threading.Thread(
-            target=self._datastream_server.start
-        )
 
     def _get_config(self):
         config = configparser.ConfigParser()
@@ -63,10 +54,6 @@ class Runner:
         self._api_server.stop()
         self._api_thread.join()
 
-        LOGGER.debug('Waiting for data stream server thread...')
-        self._datastream_server.stop()
-        self._datastream_thread.join()
-
         LOGGER.info('Bye!')
         sys.exit(0)
 
@@ -78,9 +65,9 @@ class Runner:
 
         logging.getLogger().setLevel(logging.INFO)
 
-        LOGGER.info('Starting threads...')
+        self._rssi_publisher.connect()
 
-        self._datastream_thread.start()
+        LOGGER.info('Starting threads...')
         self._tracker_thread.start()
         self._api_thread.start()
 

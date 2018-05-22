@@ -24,7 +24,7 @@ class FakeComPort:
 
 
 class FakeTrackerController:
-    def __init__(self, datastream, baudrate):
+    def __init__(self, rssi_publisher, baudrate):
         self.receiver_count = None
         self.raw_mode = None
         self.frequencies = None
@@ -34,7 +34,7 @@ class FakeTrackerController:
 
         self._should_stop = False
 
-        self._datastream = datastream
+        self._rssi_publisher = rssi_publisher
         self._state = _TrackerState(_TrackerState.DISCONNECTED)
         self._read_hz_timer = CycleTimer()
         self._control_lock = threading.RLock()
@@ -108,7 +108,7 @@ class FakeTrackerController:
         self.rssi = [r + random.randint(-16, 16) for r in self.rssi]
         self.rssi = [max(0, min(255, r)) for r in self.rssi]
 
-        self._datastream.queue_data({
+        self._rssi_publisher.publish({
             'timestamp': time.clock(),
             'rssi': self.rssi
         })
