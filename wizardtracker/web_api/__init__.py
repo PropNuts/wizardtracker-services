@@ -4,17 +4,17 @@ import time
 from flask import Flask
 from flask_socketio import SocketIO
 
-from .data_streamer import DataStreamer
+from .rssi_streamer import RssiStreamer
 
 
 socketio = SocketIO()
 
-data_streamer = DataStreamer(socketio)
-data_streamer_thread = threading.Thread(target=data_streamer.start)
+rssi_streamer = RssiStreamer(socketio)
+rssi_streamer_thread = threading.Thread(target=rssi_streamer.start)
 
 
-def init_data_streamer():
-    data_streamer_thread.start()
+def init_rssi_streamer():
+    rssi_streamer_thread.start()
 
 def create_app():
     app = Flask(__name__)
@@ -28,6 +28,6 @@ def create_app():
 
 def run_app():
     app = create_app()
-    init_data_streamer()
+    init_rssi_streamer()
 
     socketio.run(app, host='0.0.0.0', use_reloader=False, debug=True)

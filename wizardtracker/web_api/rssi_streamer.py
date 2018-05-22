@@ -7,7 +7,7 @@ from wizardtracker.nice_redis_pubsub import NiceRedisPubsub
 LOGGER = logging.getLogger(__name__)
 
 
-class DataStreamer:
+class RssiStreamer:
     HOST = '127.0.0.1'
     PORT = 3092
 
@@ -56,5 +56,5 @@ class DataStreamer:
 
     @property
     def _due_next_message(self):
-        message_delay = 1 / DataStreamer.MESSAGES_PER_SECOND
+        message_delay = 1 / self.MESSAGES_PER_SECOND
         return time.clock() >= self._last_message_time + message_delay
