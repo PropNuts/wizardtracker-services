@@ -139,7 +139,7 @@ class Delta5Compat:
 
         self._nodes = []
 
-        self.trigger_threshold = 128
+        self.trigger_threshold = 175
         self.calibration_threshold = 0
         self.calibration_offset = 0
         self._timestamp = 0
