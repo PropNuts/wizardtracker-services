@@ -41,6 +41,7 @@ class FakeTrackerController:
 
         self._gen_theta = 0
         self._gen_max = []
+        self._gen_baseline = []
 
     def start(self):
         LOGGER.info('Starting up...')
@@ -69,6 +70,8 @@ class FakeTrackerController:
 
             self._gen_max = \
                 [random.randint(170, 255) for i in range(self.receiver_count)]
+            self._gen_baseline = \
+                [random.randint(0, 50) for i in range(self.receiver_count)]
 
             LOGGER.info('Connected to fake device.')
             return True
@@ -112,7 +115,8 @@ class FakeTrackerController:
                 + (math.sin(t / 3 + c) / 6) \
                 + (math.cos(t * 3 + c) / 5) \
                 + (math.sin(t * 7.5 + c) / 8)
-            self.rssi[i] = self.rssi[i] * self._gen_max[i]
+            self.rssi[i] = \
+                self.rssi[i] * self._gen_max[i] + self._gen_baseline[i]
 
 
         self.rssi = [r + random.randint(-50, 50) for r in self.rssi]
