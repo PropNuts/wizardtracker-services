@@ -6,7 +6,7 @@ from wizardtracker.nice_redis_pubsub import NiceRedisPubsub
 LOGGER = logging.getLogger(__name__)
 
 
-def lowpass_filter(last_value, value, alpha=0.1):
+def lowpass_filter(last_value, value, alpha=0.2):
     return last_value + (alpha * (value - last_value))
 
 
