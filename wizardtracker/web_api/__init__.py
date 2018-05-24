@@ -30,4 +30,4 @@ def run_app():
     app = create_app()
     init_rssi_streamer()
 
-    socketio.run(app, host='0.0.0.0', use_reloader=False, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5050, use_reloader=False, debug=True)
