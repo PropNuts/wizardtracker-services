@@ -88,7 +88,7 @@ class Delta5CompatNode:
 
         if not self._in_peak:
             if self._rssi >= self._pass_threshold:
-                LOGGER.info(
+                LOGGER.debug(
                     'RX%d: Detected start of peak (%d >= %d)',
                     self.index,
                     self._rssi,
@@ -108,7 +108,7 @@ class Delta5CompatNode:
                 self._rssi_peak_timestamp = self._d5compat.timestamp
 
             if self._rssi < int(self._pass_threshold * 0.9):
-                LOGGER.info(
+                LOGGER.debug(
                     'RX%d: Detected end of peak (%d <= %d)',
                     self.index,
                     self._rssi,
@@ -140,8 +140,6 @@ class Delta5Compat:
         self._nodes = []
 
         self.trigger_threshold = 175
-        self.calibration_threshold = 0
-        self.calibration_offset = 0
         self._timestamp = 0
 
         self._status = None
@@ -200,8 +198,6 @@ class Delta5Compat:
 
         return {
             'nodes': nodes,
-            'calibration_threshold': self.calibration_threshold,
-            'calibration_offset': self.calibration_offset,
             'trigger_threshold': self.trigger_threshold,
         }
 
@@ -268,16 +264,6 @@ def on_get_version():
     return {'major': 1, 'minor': 0}
 
 
-@socketio.on('get_timestamp')
-def on_get_timestamp():
-    LOGGER.info('Get timestamp requested...')
-
-    if not app.d5compat.ready:
-        return
-
-    return {'timestamp': app.d5compat.timestamp}
-
-
 @socketio.on('get_settings')
 def on_get_settings():
     LOGGER.info('Get settings requested...')
@@ -300,28 +286,6 @@ def on_set_frequency(data):
     frequency = data['frequency']
 
     app.d5compat.set_frequency(receiver_id, frequency)
-
-
-@socketio.on('set_calibration_threshold')
-def on_set_calibration_threshold(data):
-    LOGGER.info('Set calibration threshold requested...')
-
-    if not app.d5compat.ready:
-        return
-
-    data = json.loads(data)
-    app.d5compat.calibration_threshold = data['calibration_threshold']
-
-
-@socketio.on('set_calibration_offset')
-def on_set_calibration_offset(data):
-    LOGGER.info('Set calibration offset requested...')
-
-    if not app.d5compat.ready:
-        return
-
-    data = json.loads(data)
-    app.d5compat.calibration_offset = data['calibration_offset']
 
 
 @socketio.on('set_trigger_threshold')
