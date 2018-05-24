@@ -40,6 +40,7 @@ class FakeTrackerController:
         self._control_lock = threading.RLock()
 
         self._gen_theta = 0
+        self._gen_max = []
 
     def start(self):
         LOGGER.info('Starting up...')
@@ -65,6 +66,9 @@ class FakeTrackerController:
             self.voltage = 11.4
             self.temperature = 20.0
             self.rssi = [0] * self.receiver_count
+
+            self._gen_max = \
+                [random.randint(170, 255) for i in range(self.receiver_count)]
 
             LOGGER.info('Connected to fake device.')
             return True
@@ -103,9 +107,16 @@ class FakeTrackerController:
             v = math.sin(t)
             d = 0.75
 
-            self.rssi[i] = ((v - d) * (1 / (1 - d))) * 255 if v > d else 0
+            self.rssi[i] = \
+                (((v - d) * (1 / (1 - d))) if v > d else 0) \
+                + (math.sin(t / 3 + c) / 6) \
+                + (math.cos(t * 3 + c) / 5) \
+                + (math.sin(t * 7.5 + c) / 8)
+            self.rssi[i] = self.rssi[i] * self._gen_max[i]
 
-        self.rssi = [r + random.randint(-16, 16) for r in self.rssi]
+
+        self.rssi = [r + random.randint(-50, 50) for r in self.rssi]
+        self.rssi = [r * (1 + random.random() * 0.1) for r in self.rssi]
         self.rssi = [max(0, min(255, r)) for r in self.rssi]
 
         self._rssi_publisher.publish({
