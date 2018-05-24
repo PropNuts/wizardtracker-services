@@ -6,7 +6,7 @@ from wizardtracker.nice_redis_pubsub import NiceRedisPubsub
 LOGGER = logging.getLogger(__name__)
 
 
-def lowpass_filter(last_value, value, alpha=0.2):
+def lowpass_filter(last_value, value, alpha=0.05):
     return last_value + (alpha * (value - last_value))
 
 
@@ -38,7 +38,7 @@ class DataProcessor:
         timestamp = data['timestamp']
         rssi = data['rssi']
 
-        filtered_rssi = self._filter_rssi(rssi, self._last_filtered_rssi)
+        filtered_rssi = self._filter_rssi(self._last_filtered_rssi, rssi)
         self._last_filtered_rssi = filtered_rssi
 
         self._redis.publish('rssiFiltered', {
@@ -47,7 +47,7 @@ class DataProcessor:
         })
 
     @staticmethod
-    def _filter_rssi(rssi, last_filtered_rssi):
+    def _filter_rssi(last_filtered_rssi, rssi):
         if not last_filtered_rssi:
             last_filtered_rssi = list(rssi)
 
