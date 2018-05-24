@@ -47,16 +47,21 @@ class Delta5CompatNode:
         self._rssi = 0
         self._rssi_peak = 0
         self._rssi_peak_timestamp = 0
-        self._rssi_trigger = 0
-        self._crossing = False
+        self._pass_threshold = self._d5compat.trigger_threshold
+        self._in_peak = False
         self._calibrating = False
 
     def reset_auto_calibrate(self):
-        self._crossing = False
-        self._calibrating = True
-        self._rssi_trigger = self._rssi - self._d5compat.calibration_offset
         self._rssi_peak = 0
         self._rssi_peak_timestamp = 0
+        self._pass_threshold = self._d5compat.trigger_threshold
+        self._in_peak = False
+        self._calibrating = True
+
+        LOGGER.info(
+            'RX%d: Beginning auto-calibrate (intiial pass: %d)...',
+            self.index,
+            self._pass_threshold)
 
     @property
     def frequency(self):
@@ -81,33 +86,47 @@ class Delta5CompatNode:
     def rssi(self, new_rssi):
         self._rssi = new_rssi
 
-        if self._rssi_trigger > 0:
-            if not self._crossing and self._rssi > self._rssi_trigger:
-                self._crossing = True
+        if not self._in_peak:
+            if self._rssi >= self._pass_threshold:
+                LOGGER.info(
+                    'RX%d: Detected start of peak (%d >= %d)',
+                    self.index,
+                    self._rssi,
+                    self._pass_threshold)
+                self._in_peak = True
+                self._rssi_peak = 0
+
+        if self._in_peak:
+            if self._rssi > self._rssi_peak:
+                LOGGER.debug(
+                    'RX%d: Detected new peak (%d >= %d, %ds)',
+                    self.index,
+                    self._rssi,
+                    self._rssi_peak,
+                    self._d5compat.timestamp / 1000)
+                self._rssi_peak = self._rssi
                 self._rssi_peak_timestamp = self._d5compat.timestamp
 
-            if self._crossing:
-                self._rssi_peak = max(self._rssi_peak, self._rssi)
+            if self._rssi < int(self._pass_threshold * 0.9):
+                LOGGER.info(
+                    'RX%d: Detected end of peak (%d <= %d)',
+                    self.index,
+                    self._rssi,
+                    self._pass_threshold * 0.9)
 
                 if self._calibrating:
-                    self._rssi_trigger = max(
-                        self._rssi_trigger,
-                        self._rssi - self._d5compat.calibration_offset)
-
-                trigger_threshold = \
-                    self._d5compat.calibration_threshold if self._calibrating \
-                    else self._d5compat.trigger_threshold
-
-                if self._rssi_trigger > trigger_threshold and \
-                        self._rssi < (self._rssi_trigger - trigger_threshold):
-                    self._crossing = False
+                    self._pass_threshold = int(self._rssi_peak * 0.75)
                     self._calibrating = False
-                    self._rssi_peak = 0
-
-                    self._d5compat.send_pass_record(
+                    LOGGER.info(
+                        'RX%d: Calibration complete. (new pass: %d)',
                         self.index,
-                        self._frequency,
-                        self._rssi_peak_timestamp)
+                        self._pass_threshold)
+
+                self._in_peak = False
+                self._d5compat.send_pass_record(
+                    self.index,
+                    self._frequency,
+                    self._rssi_peak_timestamp)
 
 
 class Delta5Compat:
@@ -120,9 +139,9 @@ class Delta5Compat:
 
         self._nodes = []
 
-        self.trigger_threshold = 25
-        self.calibration_threshold = 25
-        self.calibration_offset = 25
+        self.trigger_threshold = 128
+        self.calibration_threshold = 0
+        self.calibration_offset = 0
         self._timestamp = 0
 
         self._status = None
@@ -149,7 +168,11 @@ class Delta5Compat:
             self._loop()
 
     def send_pass_record(self, index, frequency, timestamp):
-        LOGGER.info('Sending pass record (RX%d)', index)
+        LOGGER.info(
+            'Sending pass record (RX%d, %ds)',
+            index,
+            round(timestamp / 1000, 2))
+
         self._socketio.emit('pass_record', {
             'node': index,
             'frequency': frequency,
@@ -161,7 +184,7 @@ class Delta5Compat:
         self._nodes[receiver_id].frequency = frequency
 
     def reset_auto_calibration(self, receiver_id=None):
-        if receiver_id == -1 or receiver_id == None:
+        if receiver_id is None or receiver_id == -1:
             LOGGER.info('Resetting auto calibration (all)...')
             for node in self._nodes:
                 node.reset_auto_calibrate()
