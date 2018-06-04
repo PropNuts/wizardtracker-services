@@ -1,3 +1,9 @@
+# STOP!
+
+__This project has moved to GitLab:__ https://gitlab.com/PropNuts/wizardtracker-services
+
+__There will be no further updates here.__
+
 # wizardtracker-services
 
 Backend services for the WizardTracker. Handles pulling data in from the
